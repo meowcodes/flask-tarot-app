@@ -1,7 +1,7 @@
 from flask import Flask, request, render_template, redirect, jsonify
 from flask_debugtoolbar import DebugToolbarExtension
 
-from models import db, connect_db, Card, Suit, Spread
+from models import db, connect_db, Card, Suit, Spread, Reading, CardReading
 
 app= Flask(__name__)
 app.config['SECRET_KEY'] = 'oh-so-secret'
@@ -12,11 +12,13 @@ app.config['SQLALCHEMY_ECHO'] = True
 debug = DebugToolbarExtension(app)
 connect_db(app)
 
+
 @app.route('/')
 def show_index():
     """ Show index page """
 
     return render_template("index.html")
+
 
 @app.route('/deck')
 def show_deck():
@@ -25,6 +27,7 @@ def show_deck():
     deck = Card.query.all()
 
     return render_template("deck.html", deck=deck)
+
 
 @app.route('/deck/<card_name>')
 def card_detail(card_name):
@@ -43,11 +46,13 @@ def show_spreads():
 
     return render_template("spreads.html", spreads=spreads)
 
+
 @app.route('/spreads/new')
 def new_spread_form():
     """ Show new spread form """
 
     return render_template("spread_new.html")
+
 
 @app.route('/spreads', methods=['POST'])
 def create_spread():
@@ -58,34 +63,38 @@ def create_spread():
     image_url = request.form.get('image_url')
     description = request.form.get('description')
 
-    new_spread = Spread(name=name, num_of_cards=num_of_cards, image_url=image_url, description=description)
+    new_spread = Spread(name=name, 
+                        num_of_cards=num_of_cards, image_url=image_url, description=description)
 
     db.session.add(new_spread)
     db.session.commit()
 
     return redirect('/spreads')
 
+
 @app.route('/spreads/<int:spread_id>')
 def spread_detail(spread_id):
     """ Show spread detail """
 
-    spread = Spreads.query.get(spread_id)
+    spread = Spread.query.get(spread_id)
 
     return render_template("spread.html", spread=spread)
+
 
 @app.route('/spreads/<int:spread_id>/edit')
 def edit_spread_form(spread_id):
     """ Show edit spread form"""
 
-    spread = Spreads.query.get(spread_id)
+    spread = Spread.query.get(spread_id)
 
     return render_template("spread_edit.html", spread=spread)
+
 
 @app.route('/spreads/<int:spread_id>/edit', methods=['POST'])
 def edit_spread(spread_id):
     """ Edit spread """
 
-    updated_spread = Spreads.query.get(spread_id)
+    updated_spread = Spread.query.get(spread_id)
 
     updated_spread.name = request.form.get('name')
     updated_spread.num_of_cards = request.form.get('num_of_cards')
@@ -97,16 +106,18 @@ def edit_spread(spread_id):
 
     return redirect('/spreads')
 
+
 @app.route('/spreads/<int:spread_id>/delete', methods=['POST'])
 def delete_spread(spread_id):
     """ Delete spread """
 
-    spread = Spreads.query.get(spread_id)
+    spread = Spread.query.get(spread_id)
 
     db.session.delete(spread)
     db.session.commit()
 
     redirect('/spreads')
+
 
 @app.route('/readings')
 def show_readings():
@@ -116,6 +127,7 @@ def show_readings():
 
     return render_template("readings.html", readings=readings)
 
+
 @app.route('/readings/new')
 def new_reading_form():
     """ Show new reading form """
@@ -123,6 +135,7 @@ def new_reading_form():
     spreads = Spread.query.all()
 
     return render_template("reading_new.html", spreads=spreads)
+
 
 @app.route('/readings', methods=['POST'])
 def do_reading():

@@ -1,0 +1,13 @@
+{% block content %}
+    <form action="/spreads" method="POST">
+        <label for="name">Name</label>
+        <input name="name" id="name">
+        <label for="num_of_cards">Number of Cards</label>
+        <input name="num_of_cards" id="num_of_cards" type="number">
+        <label for="image_url">Image URL</label>
+        <input name="image_url" id="image_url" type="url">
+        <label for="description">Description</label>
+        <input name="description" id="description">
+        <button type="submit">Create New Spread</button>
+    </form>
+{% endblock %}

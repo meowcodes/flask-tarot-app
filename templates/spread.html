@@ -1,0 +1,11 @@
+{% block content %}
+    <h1>{{ spread.name }}</h1>
+    <img src={{ spread.image_url }}>
+    <p>{{ spread.num_of_cards }}</p>
+    <p>{{ spread.description }}</p>
+    <a href="/spreads/{{ spread.id }}/edit">Edit<a>
+    <form action="/spreads/{{ spread.id }}/delete" method="POST">
+        <button type="submit">Delete</button>
+    </form>
+    <a href="/spreads">Spreads<a>
+{% endblock %}
