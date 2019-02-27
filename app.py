@@ -1,6 +1,7 @@
 from flask import Flask, request, render_template, redirect, jsonify
 from flask_debugtoolbar import DebugToolbarExtension
-from models import db, connect_db, Deck, Suit
+
+from models import db, connect_db, Card, Suit, Spread
 
 app= Flask(__name__)
 app.config['SECRET_KEY'] = 'oh-so-secret'
@@ -21,7 +22,7 @@ def show_index():
 def show_deck():
     """ Show full deck """
 
-    deck = Deck.query.all()
+    deck = Card.query.all()
 
     return render_template("deck.html", deck=deck)
 
@@ -29,7 +30,7 @@ def show_deck():
 def card_detail(card_name):
     """ Show card detail """
 
-    card = Deck.query.get(card_name)
+    card = Card.query.get(card_name)
 
     return render_template("card.html", card=card)
 
