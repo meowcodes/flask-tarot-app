@@ -29,11 +29,11 @@ def show_deck():
     return render_template("deck.html", deck=deck)
 
 
-@app.route('/deck/<card_name>')
-def card_detail(card_name):
+@app.route('/deck/<card_number>')
+def card_detail(card_number):
     """ Show card detail """
 
-    card = Card.query.get(card_name)
+    card = Card.query.get(card_number)
 
     return render_template("card.html", card=card)
 

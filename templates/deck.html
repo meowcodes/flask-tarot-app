@@ -1,7 +1,7 @@
 {% block content %}
     <ol>
-    {{ for card in deck }}
-        <li><a href="/deck/{{ card.name }}">{{ card.name }}</a></li>
-    {{ endfor }}
+    {% for card in deck %}
+        <li><a href="/deck/{{ card.number }}">{{ card.name }}</a></li>
+    {% endfor %}
     </ol>
 {% endblock %}

@@ -9,7 +9,6 @@ db.session.add(Suit(name="Swords", element="air"))
 db.session.add(Suit(name="Pentacles", element="earth"))
 db.session.add(Suit(name="Wands", element="fire"))
 
-
 db.session.add(
     Card(number=0, arcana="Major", name="The Fool"))
 db.session.add(

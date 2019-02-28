@@ -1,7 +1,7 @@
 {% block content %}
     <ol>
-    {{ for spread in spreads }}
+    {% for spread in spreads %}
         <li><a href="/spreads/{{ spread.id }}">{{ spread.name }}</a></li>
-    {{ endfor }}
+    {% endfor %}
     </ol>
 {% endblock %}
