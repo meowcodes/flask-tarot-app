@@ -1,4 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.sql import func
+
 db = SQLAlchemy()
 
 
@@ -9,45 +11,134 @@ def connect_db(app):
     db.init_app(app)
 
 
+class ReadingCardPlacement(db.Model):
+    """
+    List of all cards in each reading based on placement.
+
+    Connects Reading, Card, Placement tables
+
+    Through Relationships: card.readings,
+                           card.placements,
+                           placements.cards,
+                           reading.cards
+    """
+
+    __tablename__ = "r_cards_placements"
+
+    reading_id = db.Column(
+        db.Integer,
+        db.ForeignKey('readings.id'),
+        primary_key=True
+    )
+
+    card_id = db.Column(
+        db.String(30),
+        db.ForeignKey('cards.id'),
+        primary_key=True
+    )
+
+    placement_id = db.Column(
+        db.Integer,
+        db.ForeignKey('placements.id'),
+        nullable=False
+    )
+
+    def __repr__(self):
+        rpc = self
+
+        return f"< Reading {rpc.reading_id}, {rpc.card_name} >"
+
+
+class Suit(db.Model):
+    """
+    All suits in deck
+
+    suit.cards: cards in this suit
+    """
+
+    __tablename__ = "suits"
+
+    name = db.Column(
+        db.String(10),
+        primary_key=True
+    )
+
+    element = db.Column(
+        db.String(10),
+        nullable=False
+    )
+
+    description = db.Column(db.Text)
+
+    cards = db.relationship(
+        'Card',
+        backref='suit'
+    )
+
+    def __repr__(self):
+        suit = self
+
+        return f"< {suit.name} Suit, {suit.elemet}: {suit.description} >"
+
+
 class Card(db.Model):
-    """ Rider-Waite Tarot Deck """
+    """
+    78 Card Rider-Waite Tarot Deck
+
+    card.readings: readings this card was in
+    card.placements: placements this card was read in
+    """
 
     __tablename__ = "cards"
 
-    name = db.Column(db.String(30),
-                     primary_key=True)
-    arcana = db.Column(db.String(5),
-                       nullable=False)
-    suit = db.Column(db.String(10),
-                     db.ForeignKey('suits.name'))
+    num = db.Columb(
+        db.Integer,
+        primary_key=True
+    )
+
+    arcana = db.Column(
+        db.String(10),
+        nullable=False
+    )
+
+    name = db.Column(
+        db.String(30)
+    )
+
+    suit_name = db.Column(
+        db.String(10),
+        db.ForeignKey('suits.name'),
+        nullable=False
+    )
+
     num = db.Column(db.Integer)
+
     image_url = db.Column(db.Text)
+
     description = db.Column(db.Text)
+
     meaning = db.Column(db.Text)
 
-    suit = db.relationship('Suit', backref='cards')
-    spread = db.relationship('Spread', backref='cards')
-    cards_readings = db.relationship('CardReading',
-                                     backref='cards')
-    reading = db.relationship('CardReading',
-                              secondary='cards_readings',
-                              backref='cards')
+    readings = db.relationship(
+        'Reading',
+        secondary='r_cards_placements',
+        backref='cards'
+    )
+
+    placements = db.relationship(
+        'Placement',
+        secondary='r_cards_placements',
+        backref='cards'
+    )
 
     def __repr__(self):
-        card = self
 
-        return f"<Tarot Card {card.id} {card.name}>"
+        return f"< {self.name} >"
 
     def introduce(self):
         """ Introduce card """
 
         return f"{self.name}: {self.description}"
-
-    @classmethod
-    def get_by_arcana(cls, arcana):
-        """ Gets all cards of major or minor arcana"""
-
-        return cls.query.filter_by(arcana=arcana).all()
 
     @classmethod
     def get_by_suit(cls, suit):
@@ -56,45 +147,55 @@ class Card(db.Model):
         return cls.query.filter_by(suit=suit).all()
 
 
-class Suit(db.Model):
-    """ Suits """
-
-    __tablename__ = "suits"
-
-    name = db.Column(db.String(10),
-                     primary_key=True)
-    element = db.Column(db.String(10),
-                        nullable=False)
-    description = db.Column(db.Text)
-
-    def __repr__(self):
-        suit = self
-
-        return f"<{suit.name} Suit, {suit.elemet}: {suit.description}>"
-
-
 class Spread(db.Model):
-    """ Spreads """
+    """
+    Spreads with descriptions
+
+    spread.placements: placements details for this spread
+    spread.readings: readings that used this spread
+    """
 
     __tablename__ = "spreads"
 
-    id = db.Column(db.Integer,
-                   primary_key=True,
-                   autoincrement=True)
-    name = db.Column(db.String(30),
-                     nullable=False,
-                     unique=True)
-    num_of_cards = db.Column(db.Integer,
-                             nullable=False)
-    image_url = db.Column(db.Text,
-                          nullable=False)
-    description = db.Column(db.Text,
-                            nullable=False)
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+        autoincrement=True
+    )
+
+    name = db.Column(
+        db.String(30),
+        nullable=False,
+        unique=True
+    )
+
+    num_of_cards = db.Column(
+        db.Integer,
+        nullable=False
+    )
+    
+    image_url = db.Column(
+        db.Text,
+        nullable=False
+    )
+
+    description = db.Column(
+        db.Text,
+        nullable=False
+    )
+
+    category = db.Column(
+        db.String(20)
+    )
+
+    placements = db.relationship(
+        'Placement',
+        backref='spread'
+    )
 
     def __repr__(self):
-        spread = self
 
-        return f"<{spread.name} Spread ({spread.num_of_cards} Cards): {spread.description}>"
+        return f"< {self.name} Spread ({self.num_of_cards} Cards) >"
 
     @classmethod
     def get_by_card_num(cls, card_num):
@@ -103,35 +204,76 @@ class Spread(db.Model):
         return cls.query.filter_by(num_of_cards=card_num).all()
 
 
+class Placement(db.Model):
+    """
+    Placement details for each spread.
+    
+    placement.cards: cards that have been read in this placement
+    """
+
+    __tablename__ = "placements"
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+        autoincrement=True
+    )
+
+    spread_id = db.Column(
+        db.Integer,
+        db.ForeignKey('spreads.id'),
+        nullable=False
+    )
+
+    place_num = db.Column(
+        db.Integer,
+        nullable=False
+    )
+
+    place_details = db.Column(
+        db.String(100),
+        nullable=False
+    )
+
+    def __repr__(self):
+
+        return f"< Card #{self.place_num} Placement Details for Spread ID {self.spread_id} >"
+
+
 class Reading(db.Model):
-    """ Saved Readings """
+    """ 
+    Reading details
+
+    reading.cards: cards in this reading
+    reading.cards_placements: placement each card was in for this reading
+    """
 
     __tablename__ = "readings"
 
-    id = db.Column(db.Integer,
-                   primary_key=True,
-                   autoincrement=True)
-    date = db.Column(db.DateTime)
-    name = db.Column(db.String(30),
-                     nullable=False,
-                     unique=True)
-    spread_id = db.Column(db.Integer,
-                          db.ForeignKey('spreads.id'))
-    
-    cards_readings = db.relationship('CardReading',
-                                     backref='readings')
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+        autoincrement=True
+    )
 
+    timestamp = db.Column(
+        db.DateTime(timezone=True),
+        server_default=func.now(),
+        index=True
+    )
 
-class CardReading(db.Model):
-    """ Each Card in Each Reading Association Table """
+    spread_id = db.Column(
+        db.Integer,
+        db.ForeignKey('spreads.id')
+    )
 
-    __tablename__ = "cards_readings"
+    thoughts = db.Column(db.Text)
 
-    reading_id = db.Column('reading_id',
-                           db.Integer,
-                           db.ForeignKey('readings.id'),
-                           primary_key=True)
-    card_id = db.Column('card_name',
-                        db.String(30),
-                        db.ForeignKey('cards.name'),
-                        primary_key=True)
+    cards_placements = db.relationship(
+        'ReadingCardPlacement',
+        backref='readings'
+    )
+
+    def __repr__(self):
+
+        return f"< Reading {self.id} >"

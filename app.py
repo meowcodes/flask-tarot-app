@@ -1,7 +1,7 @@
 from flask import Flask, request, render_template, redirect, jsonify
 from flask_debugtoolbar import DebugToolbarExtension
 
-from models import db, connect_db, Card, Suit, Spread, Reading, CardReading
+from models import db, connect_db, Card, Suit, Spread, SpreadPlacement, Reading, CardReading
 
 app= Flask(__name__)
 app.config['SECRET_KEY'] = 'oh-so-secret'
