@@ -25,16 +25,20 @@ class ReadingCardPlacement(db.Model):
 
     __tablename__ = "r_cards_placements"
 
-    reading_id = db.Column(
+    id = db.Column(
         db.Integer,
-        db.ForeignKey('readings.id'),
-        primary_key=True
+        primary_key=True,
+        autoincrement=True
     )
 
-    card_id = db.Column(
-        db.String(30),
-        db.ForeignKey('cards.id'),
-        primary_key=True
+    reading_id = db.Column(
+        db.Integer,
+        db.ForeignKey('readings.id')
+    )
+
+    card_num = db.Column(
+        db.Integer,
+        db.ForeignKey('cards.number')
     )
 
     placement_id = db.Column(
@@ -91,7 +95,7 @@ class Card(db.Model):
 
     __tablename__ = "cards"
 
-    num = db.Columb(
+    number = db.Column(
         db.Integer,
         primary_key=True
     )
@@ -102,16 +106,15 @@ class Card(db.Model):
     )
 
     name = db.Column(
-        db.String(30)
+        db.String(30),
+        nullable=False,
+        unique=True
     )
 
     suit_name = db.Column(
         db.String(10),
-        db.ForeignKey('suits.name'),
-        nullable=False
+        db.ForeignKey('suits.name')
     )
-
-    num = db.Column(db.Integer)
 
     image_url = db.Column(db.Text)
 
@@ -173,7 +176,7 @@ class Spread(db.Model):
         db.Integer,
         nullable=False
     )
-    
+
     image_url = db.Column(
         db.Text,
         nullable=False
@@ -207,7 +210,7 @@ class Spread(db.Model):
 class Placement(db.Model):
     """
     Placement details for each spread.
-    
+
     placement.cards: cards that have been read in this placement
     """
 
@@ -225,19 +228,19 @@ class Placement(db.Model):
         nullable=False
     )
 
-    place_num = db.Column(
+    num = db.Column(
         db.Integer,
         nullable=False
     )
 
-    place_details = db.Column(
+    details = db.Column(
         db.String(100),
         nullable=False
     )
 
     def __repr__(self):
 
-        return f"< Card #{self.place_num} Placement Details for Spread ID {self.spread_id} >"
+        return f"< Card #{self.num} Placement Details for Spread ID {self.spread_id} >"
 
 
 class Reading(db.Model):
